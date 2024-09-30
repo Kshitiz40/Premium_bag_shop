@@ -10,7 +10,8 @@ module.exports.registerUser =async (req, res) => {
 
         let checkUser = await userModel.findOne({ email: email })
         if (checkUser) {
-            return res.send("user already exists!")
+            req.flash("error","user already exists!");
+            return res.redirect('/');
         }
 
         bcryptjs.genSalt(10, (err, salt) => {
@@ -19,7 +20,7 @@ module.exports.registerUser =async (req, res) => {
                 let user = await userModel.create({ email, fullname, password: hash })
                 let token = generateToken(user)
                 res.cookie("token", token);
-                res.send(user)
+                res.redirect("/shop")
             })
         });
     }
@@ -40,9 +41,14 @@ module.exports.loginUser = async (req,res)=>{
             }
             let token = generateToken(user);
             res.cookie("token",token);
-            res.send("login succesfull");
+            res.redirect('/shop')
         })
     }catch(error){
         res.status(400).send(error.message)
     }
+}
+
+module.exports.logout = (req,res)=>{
+    res.cookie("token","");
+    res.redirect('/')
 }
